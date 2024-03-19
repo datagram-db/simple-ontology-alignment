@@ -1,0 +1,7 @@
+"X" {
+   concept "User" {
+      "Account": STRING
+      "Follower": LIST CONCEPT "User"
+      "Followee": LIST CONCEPT "User"
+   }
+}

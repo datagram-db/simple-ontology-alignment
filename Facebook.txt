@@ -1,0 +1,18 @@
+"Facebook" {
+  concept "Bogus" {
+     "Anabasi": CONCEPT "Poggi"
+     "Bonzi": CONCEPT "Poggi"
+  }
+
+  concept "Poggi" {
+     "Bogus": STRING
+  }
+
+   concept "User" {
+      "Name": STRING
+      "Surname": DOUBLE
+      "Friend":  LIST CONCEPT "User"
+      "Follower":  LIST CONCEPT "User"
+      "Twitter Account": STRING
+   }
+}
