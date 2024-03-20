@@ -23,6 +23,7 @@
 import it.giacomobergami.linalg.LabelledMatrix;
 import it.giacomobergami.simpleschema.barbara.barbaraLexer;
 import it.giacomobergami.simpleschema.barbara.barbaraParser;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.jgrapht.alg.cycle.CycleDetector;
@@ -87,8 +88,8 @@ public class Ontology extends ImmutablePair<String, ArrayList<Concept>> implemen
         return builder;
     }
 
-    public static Ontology ontologyFromFile(Path f) throws Exception {
-        barbaraLexer lexer = new barbaraLexer(CharStreams.fromPath(f));
+    private static Ontology ontologyFromCharStream(CharStream stream) throws UndefinedConceptException{
+        barbaraLexer lexer = new barbaraLexer(stream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         barbaraParser parser = new barbaraParser(tokens);
         var ctx = parser.ontology();
@@ -137,6 +138,14 @@ public class Ontology extends ImmutablePair<String, ArrayList<Concept>> implemen
             }
         }
         return new Ontology(ontologyName, new ArrayList<>(ontologyConcepts.values()));
+    }
+
+    public static Ontology ontologyFromFile(Path f) throws Exception {
+        return ontologyFromCharStream(CharStreams.fromPath(f));
+    }
+
+    public static Ontology ontologyFromString(String str) throws Exception {
+        return ontologyFromCharStream(CharStreams.fromString(str));
     }
 
     @Override

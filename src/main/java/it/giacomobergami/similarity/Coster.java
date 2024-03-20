@@ -23,6 +23,8 @@
 import it.giacomobergami.simpleschema.ConceptProperty;
 import it.giacomobergami.simpleschema.NativeTypes;
 
+import java.util.Objects;
+
 public class Coster {
 
     private IEmbedding weightFunction;
@@ -32,6 +34,8 @@ public class Coster {
     }
 
     public double getDoubleWeight(String src, String dst) {
+        if (Objects.equals(src, dst))
+            return 0;
         return  weightFunction.normalised_distance(src, dst);
     }
 

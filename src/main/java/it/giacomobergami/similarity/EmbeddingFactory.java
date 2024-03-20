@@ -58,7 +58,7 @@ public class EmbeddingFactory {
             }
             case ConceptNetWithMatch -> {
                 try {
-                    return new ConceptNet5SingleConceptSimilarity(null, 0.7);
+                    return new ConceptNet5SingleConceptSimilarity(null, 0.8);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

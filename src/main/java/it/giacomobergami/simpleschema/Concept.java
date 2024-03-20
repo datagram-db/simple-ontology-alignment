@@ -67,7 +67,7 @@ public class Concept extends ConceptProperty {
         } else {
             visited.add(getKey());
         }
-        int count = 2;
+        int count = 0;
         for (IConcept concept : mapping.values())
             count += concept.countConceptNodes(visited);
         return count;

@@ -24,6 +24,8 @@ import com.google.common.collect.Lists;
 import it.giacomobergami.linalg.LabelledMatrix;
 import it.giacomobergami.similarity.Coster;
 import it.giacomobergami.similarity.IEmbedding;
+import it.giacomobergami.simpleschema.alignments.Alignment;
+import it.giacomobergami.simpleschema.alignments.ConceptPath;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
@@ -321,9 +323,24 @@ public class OntologyAlignment {
         }
     }
 
-    public HashMap<ImmutablePair<String, String>, Correspondence> run(boolean doFieldRefine, boolean doConceptCostEvaluateBeforeAssignment) {
+    public Alignment run(boolean doFieldRefine, boolean doConceptCostEvaluateBeforeAssignment) {
         floodingFieldCost();
-        return fieldwiseConceptCorrespondence(doFieldRefine, doConceptCostEvaluateBeforeAssignment);
+        HashMap<ImmutablePair<String, String>, Correspondence> result = fieldwiseConceptCorrespondence(doFieldRefine, doConceptCostEvaluateBeforeAssignment);
+        var A = new Alignment(srcOntology, dstOntology);
+        for (var cp : result.entrySet()) {
+            var corr = A.generateConceptCorrespondence(new ConceptPath(srcOntology.getName(), cp.getKey().getKey()),
+                                  new ConceptPath(dstOntology.getName(), cp.getKey().getValue()),
+                                  cp.getValue().getOverallCost());
+            for (var fields : cp.getValue().map.entrySet()) {
+                for (var vals : fields.getValue().entrySet()) {
+                    A.addFieldCorrespondence(new ConceptPath(srcOntology.getName(), cp.getKey().getKey(), fields.getKey()),
+                            new ConceptPath(dstOntology.getName(), cp.getKey().getValue(), vals.getKey()),
+                            vals.getValue(),
+                            corr);
+                }
+            }
+        }
+        return A;
     }
 
     public void printAlignment(HashMap<ImmutablePair<String, String>, Correspondence> alignment) {
@@ -333,7 +350,7 @@ public class OntologyAlignment {
             System.out.println("* Field Correspondence: ");
             for (var fields : cp.getValue().map.entrySet()) {
                 for (var vals : fields.getValue().entrySet()) {
-                    System.out.println(srcOntology.getName()+"."+cp.getKey().getKey()+"."+fields.getKey()+" --> "+dstOntology.getName()+"."+cp.getKey().getValue()+"."+vals.getKey()+" with score: "+vals.getValue());
+                    System.out.println(srcOntology.getName()+"."+cp.getKey().getKey()+"."+fields.getKey()+" --> "+dstOntology.getName()+"."+cp.getKey().getValue()+"."+vals.getKey()+" with cost: "+vals.getValue());
                 }
             }
             System.out.println(System.lineSeparator());

@@ -22,14 +22,16 @@
 package it.giacomobergami.similarity;
 
 import net.intertextueel.conceptnet.Concept;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
 
 import javax.annotation.Nullable;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.IntFunction;
 import java.util.zip.GZIPInputStream;
 
 import static it.giacomobergami.similarity.EmbeddingFactory.kernel_n;
@@ -40,12 +42,27 @@ public class ConceptNet5SingleConceptSimilarity implements IEmbedding {
     private HashMap<String, float[]> mapVector;
     private HashMap<String, Concept> mapConcept;
 
+    InputStream retrieveNumberbatch() throws IOException {
+        File f = new File("numberbatch-en-19.08.txt.gz");
+        if (!f.exists()) {
+            URL website = new URL("https://conceptnet.s3.amazonaws.com/downloads/2019/numberbatch/numberbatch-en-19.08.txt.gz");
+            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+            System.out.println("Downloading from: \"https://conceptnet.s3.amazonaws.com/downloads/2019/numberbatch/numberbatch-en-19.08.txt.gz\"");
+            try (FileOutputStream fos = new FileOutputStream(f)) {
+                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println("done!");
+        }
+        return new FileInputStream(f);
+    }
+
     public ConceptNet5SingleConceptSimilarity( @Nullable String lang, double maxTheta) throws IOException {
         this.maxTheta = maxTheta;
         mapVector = new HashMap<>();
         mapConcept = new HashMap<>();
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        InputStream fileStream = classloader.getResourceAsStream("numberbatch-en-19.08.txt.gz");
+        InputStream fileStream = retrieveNumberbatch();
         InputStream gzipStream = new GZIPInputStream(fileStream);
         Reader decoder = new InputStreamReader(gzipStream, StandardCharsets.UTF_8);
         BufferedReader buffered = new BufferedReader(decoder);
